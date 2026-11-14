@@ -67,6 +67,17 @@ export const tools: Tool[] = [
       'Generator QR Code kustom terintegrasi dengan parameter kampanye UTM.',
     shortcutKey: '6',
   },
+   {
+    id: 'porto',
+    name: 'Portofolio & Resume',
+    subdomain: 'porto.zevn.web.id/qr',
+    url: 'https://porto.zevn.web.id/qr',
+    category: 'Links',
+    status: 'live',
+    description:
+      'just npc portofolio.',
+    shortcutKey: '7',
+  },
 ];
 
 export const categories = [

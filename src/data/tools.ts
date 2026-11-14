@@ -78,6 +78,7 @@ export const tools: Tool[] = [
       'just npc portofolio.',
     shortcutKey: '7',
   },
+
 ];
 
 export const categories = [

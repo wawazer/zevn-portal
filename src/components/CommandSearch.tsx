@@ -56,7 +56,7 @@ export function CommandSearch({
             isDark ? 'text-text-secondary' : 'text-text-secondary-light'
           }`}
         >
-          Koleksi layanan mikro dan utilitas untuk kebutuhan sehari-hari.
+          Serah gua
         </p>
       </div>
 

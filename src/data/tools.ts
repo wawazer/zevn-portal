@@ -70,7 +70,7 @@ export const tools: Tool[] = [
    {
     id: 'porto',
     name: 'Portofolio & Resume',
-    subdomain: 'porto.zevn.web.id'
+    subdomain: 'porto.zevn.web.id',
     url: 'https://porto.zevn.web.id',
     category: 'Links',
     status: 'live',

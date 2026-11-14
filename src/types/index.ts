@@ -21,3 +21,16 @@ export interface Tool {
 export type CategoryFilter = 'All' | ToolCategory;
 
 export type Theme = 'dark' | 'light';
+
+// License system types
+export interface LicenseRecord {
+  key: string;
+  owner: string;
+  app: string;
+  status: 'active' | 'revoked';
+  deviceId: string | null;
+  hostname: string | null;
+  createdAt: string;
+  activatedAt: string | null;
+  lastSeen: string | null;
+}

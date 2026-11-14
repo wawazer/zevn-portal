@@ -5,57 +5,90 @@ export default async function handler(req, res) {
   for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
 
   if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { licenseKey, deviceId, hostname, app } = req.body || {};
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  if (!licenseKey || !deviceId || !hostname) {
-    return res.status(400).json({ valid: false, reason: "MISSING_FIELDS", message: "licenseKey, deviceId, dan hostname wajib diisi." });
-  }
+    let body = req.body;
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch {}
+    }
+    const { licenseKey, deviceId, hostname, app } = body || {};
 
-  const key = String(licenseKey).trim().toUpperCase();
-  const redis = getRedis();
-  const stored = await redis.get(`license:${key}`);
+    if (!licenseKey || !deviceId || !hostname) {
+      return res.status(400).json({
+        valid: false,
+        reason: "MISSING_FIELDS",
+        message: "licenseKey, deviceId, dan hostname wajib diisi.",
+      });
+    }
 
-  if (!stored || typeof stored !== "object") {
-    return res.status(403).json({ valid: false, reason: "INVALID_OR_REVOKED", message: "License key tidak valid atau telah dicabut." });
-  }
+    const key = String(licenseKey).trim().toUpperCase();
+    const redis = getRedis();
+    let stored = await redis.get(`license:${key}`);
 
-  if (stored.status !== "active") {
-    return res.status(403).json({ valid: false, reason: "INVALID_OR_REVOKED", message: "License key tidak valid atau telah dicabut." });
-  }
+    if (typeof stored === "string") {
+      try {
+        stored = JSON.parse(stored);
+      } catch {}
+    }
 
-  // App mismatch check
-  if (stored.app && app && stored.app !== app) {
-    return res.status(403).json({ valid: false, reason: "APP_MISMATCH", message: `Lisensi ini hanya berlaku untuk app "${stored.app}".` });
-  }
+    if (!stored || typeof stored !== "object") {
+      return res.status(403).json({
+        valid: false,
+        reason: "INVALID_OR_REVOKED",
+        message: "License key tidak valid atau telah dicabut.",
+      });
+    }
 
-  const now = new Date().toISOString();
+    if (stored.status !== "active") {
+      return res.status(403).json({
+        valid: false,
+        reason: "INVALID_OR_REVOKED",
+        message: "License key tidak valid atau telah dicabut.",
+      });
+    }
 
-  // Device binding logic
-  if (!stored.deviceId) {
-    // First-time bind
-    stored.deviceId = deviceId;
-    stored.hostname = hostname;
-    stored.activatedAt = now;
-    stored.lastSeen = now;
-    await redis.set(`license:${key}`, stored);
-  } else if (stored.deviceId !== deviceId) {
-    return res.status(403).json({
-      valid: false,
-      reason: "DEVICE_MISMATCH",
-      message: `Lisensi sudah terikat pada perangkat lain (${stored.hostname}).`,
+    // App mismatch check
+    if (stored.app && app && stored.app !== app) {
+      return res.status(403).json({
+        valid: false,
+        reason: "APP_MISMATCH",
+        message: `Lisensi ini hanya berlaku untuk app "${stored.app}".`,
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    // Device binding logic
+    if (!stored.deviceId) {
+      // First-time bind
+      stored.deviceId = deviceId;
+      stored.hostname = hostname;
+      stored.activatedAt = now;
+      stored.lastSeen = now;
+      await redis.set(`license:${key}`, stored);
+    } else if (stored.deviceId !== deviceId) {
+      return res.status(403).json({
+        valid: false,
+        reason: "DEVICE_MISMATCH",
+        message: `Lisensi sudah terikat pada perangkat lain (${stored.hostname}).`,
+      });
+    } else {
+      // Same device — update lastSeen
+      stored.lastSeen = now;
+      await redis.set(`license:${key}`, stored);
+    }
+
+    return res.status(200).json({
+      valid: true,
+      owner: stored.owner,
+      app: stored.app,
+      hostname: stored.hostname,
     });
-  } else {
-    // Same device — update lastSeen
-    stored.lastSeen = now;
-    await redis.set(`license:${key}`, stored);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
-
-  return res.status(200).json({
-    valid: true,
-    owner: stored.owner,
-    app: stored.app,
-    hostname: stored.hostname,
-  });
 }

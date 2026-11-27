@@ -8,7 +8,7 @@ export function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-export function base64ToBytes(input: string): Uint8Array {
+export function base64ToBytes(input: string): Uint8Array<ArrayBuffer> {
   const cleaned = input
     .trim()
     .replace(/^data:[^;,]*;base64,/i, '')

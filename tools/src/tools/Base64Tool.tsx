@@ -121,7 +121,10 @@ function FileBase64() {
   const [error, setError] = useState('');
 
   const [encodedInput, setEncodedInput] = useState('');
-  const [decoded, setDecoded] = useState<{ bytes: Uint8Array; mime: string } | null>(null);
+  const [decoded, setDecoded] = useState<{
+    bytes: Uint8Array<ArrayBuffer>;
+    mime: string;
+  } | null>(null);
   const [decodeError, setDecodeError] = useState('');
 
   const encodeFile = async (next: File | null) => {

@@ -268,8 +268,7 @@ export default function App() {
           muted,
         )}
       >
-        <span>Bagian dari zevn.web.id · Client-Side Utility Suite</span>
-        <span>Dibuat dengan React + Web Crypto + Canvas</span>
+        <span>zevn.web.id · Client-Side Utility Suite</span>
       </footer>
     </div>
   );

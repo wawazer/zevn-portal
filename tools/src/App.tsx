@@ -3,26 +3,41 @@ import {
   ArrowUpRight,
   Binary,
   Braces,
+  CalendarClock,
+  FileDiff,
   Fingerprint,
   Image as ImageIcon,
+  KeyRound,
+  Link2,
   Moon,
+  Palette,
   QrCode,
+  SearchCode,
   ShieldCheck,
   Sun,
+  Table,
   type LucideIcon,
 } from 'lucide-react';
 import { useCallback, useEffect, useState, type ComponentType } from 'react';
 import { Base64Tool } from './tools/Base64Tool';
+import { ColorTool } from './tools/ColorTool';
+import { CsvJsonTool } from './tools/CsvJsonTool';
+import { DateTimeTool } from './tools/DateTimeTool';
+import { DiffTool } from './tools/DiffTool';
+import { FormatTool } from './tools/FormatTool';
 import { ImageCompressor } from './tools/ImageCompressor';
-import { JsonFormatter } from './tools/JsonFormatter';
+import { PasswordTool } from './tools/PasswordTool';
 import { QrTool } from './tools/QrTool';
+import { RegexTester } from './tools/RegexTester';
+import { SlugTool } from './tools/SlugTool';
 import { UuidHashTool } from './tools/UuidHashTool';
 import { cn, muted, strong } from './components/ui';
 import { useTheme } from './hooks/useTheme';
 
 interface ToolEntry {
   path: string;
-  key: string;
+  key?: string;
+  aliases?: string[];
   name: string;
   tagline: string;
   Icon: LucideIcon;
@@ -39,12 +54,13 @@ const TOOLS: ToolEntry[] = [
     Component: ImageCompressor,
   },
   {
-    path: '/json',
+    path: '/format',
     key: '2',
-    name: 'JSON Formatter',
-    tagline: 'Validasi, rapikan, dan minify JSON lengkap dengan posisi error.',
+    aliases: ['/json'],
+    name: 'JSON, SQL & JWT',
+    tagline: 'Validasi dan rapikan JSON, beautify SQL, serta baca payload JWT.',
     Icon: Braces,
-    Component: JsonFormatter,
+    Component: FormatTool,
   },
   {
     path: '/base64',
@@ -69,6 +85,59 @@ const TOOLS: ToolEntry[] = [
     tagline: 'Buat QR dari teks atau URL dan unduh sebagai PNG.',
     Icon: QrCode,
     Component: QrTool,
+  },
+  {
+    path: '/regex',
+    key: '6',
+    name: 'Regex Tester',
+    tagline: 'Uji pola JavaScript, lihat semua kecocokan dan grup tangkapan.',
+    Icon: SearchCode,
+    Component: RegexTester,
+  },
+  {
+    path: '/datetime',
+    key: '7',
+    name: 'Timestamp & Tanggal',
+    tagline: 'Konversi unix timestamp, ISO 8601, dan waktu lokal.',
+    Icon: CalendarClock,
+    Component: DateTimeTool,
+  },
+  {
+    path: '/diff',
+    key: '8',
+    name: 'Text Diff',
+    tagline: 'Bandingkan dua versi teks baris per baris.',
+    Icon: FileDiff,
+    Component: DiffTool,
+  },
+  {
+    path: '/csv',
+    key: '9',
+    name: 'CSV ↔ JSON',
+    tagline: 'Konversi CSV ke JSON dan sebaliknya, dengan pilihan delimiter.',
+    Icon: Table,
+    Component: CsvJsonTool,
+  },
+  {
+    path: '/color',
+    name: 'Color Converter',
+    tagline: 'HEX, RGB, dan HSL plus cek kontras WCAG.',
+    Icon: Palette,
+    Component: ColorTool,
+  },
+  {
+    path: '/password',
+    name: 'Password Generator',
+    tagline: 'Kata sandi acak dari Web Crypto dengan estimasi entropi.',
+    Icon: KeyRound,
+    Component: PasswordTool,
+  },
+  {
+    path: '/slug',
+    name: 'Slug Generator',
+    tagline: 'Ubah judul jadi slug URL yang bersih dan konsisten.',
+    Icon: Link2,
+    Component: SlugTool,
   },
 ];
 
@@ -99,10 +168,11 @@ function Overview({ onOpen }: { onOpen: (path: string) => void }) {
     <div className="space-y-4">
       <div>
         <h1 className={cn('text-base font-semibold', strong)}>
-          5 alat, semuanya jalan di browser
+          {TOOLS.length} alat, semuanya jalan di browser
         </h1>
         <p className={cn('mt-1 text-sm', muted)}>
-          Tidak ada file yang diunggah. Pilih alatnya, atau tekan angka 1–5.
+          Tidak ada file yang diunggah. Pilih alatnya, atau pakai pintasan angka di
+          sidebar.
         </p>
       </div>
 
@@ -138,7 +208,9 @@ export default function App() {
   const { theme, toggleTheme } = useTheme();
   const { path, navigate } = useRoute();
 
-  const active = TOOLS.find((tool) => tool.path === path);
+  const active = TOOLS.find(
+    (tool) => tool.path === path || tool.aliases?.includes(path),
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -241,9 +313,11 @@ export default function App() {
               >
                 <Icon size={13} />
                 {name}
-                <kbd className="ml-auto hidden font-mono text-[10px] opacity-60 lg:inline">
-                  {key}
-                </kbd>
+                {key && (
+                  <kbd className="ml-auto hidden font-mono text-[10px] opacity-60 lg:inline">
+                    {key}
+                  </kbd>
+                )}
               </button>
             ))}
           </nav>

@@ -30,7 +30,7 @@ function describeJsonError(raw: string, err: unknown): string {
   return message;
 }
 
-export function JsonFormatter() {
+export function JsonFormatter({ embedded = false }: { embedded?: boolean }) {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -69,10 +69,12 @@ export function JsonFormatter() {
 
   return (
     <div className="space-y-4">
-      <ToolHeader
-        title="JSON Formatter"
-        description="Validasi, rapikan, dan minify payload JSON. Semua diproses lokal di tab ini."
-      />
+      {!embedded && (
+        <ToolHeader
+          title="JSON Formatter"
+          description="Validasi, rapikan, dan minify payload JSON. Semua diproses lokal di tab ini."
+        />
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className={panelCls}>
